@@ -1,3 +1,7 @@
+import re
+
+
+
 database = [
     {'author': 'John Doe', 'title': 'The Mystery of Life', 'quantity': 3, 'status': 'Available'},
     {'author': 'Jane Smith', 'title': 'Into the Unknown', 'quantity': 0, 'status': 'Not Available'},
@@ -14,16 +18,20 @@ database = [
 def search(option_1, option_2):
     found_records = []
     if option_1 == 1:
-        found_records = [record for record in database if record['author'] == option_2]
+        pattern = re.compile('^' + option_2, re.IGNORECASE) 
+        found_records = [record for record in database if pattern.match(record['author'])]
     else:
-        found_records = [record for record in database if record['title'] == option_2]
+        pattern = re.compile('^' + option_2, re.IGNORECASE)
+        found_records = [record for record in database if pattern.match(record['title'])]
 
     for record in found_records:
         print(record['title'], " ", record['author'], " ", record['quantity'], " ", record['status'])
 
 def issue(author, title):
+    pattern1=re.compile('^'+author,re.IGNORECASE)
+    pattern2=re.compile('^'+title,re.IGNORECASE)
     for record in database:
-        if record['author'] == author and record['title'] == title:
+        if pattern1.match(record['author']) and pattern2.match(record['title']):
             if record['quantity'] == 0:
                 print("No books available!")
                 return
@@ -38,7 +46,7 @@ def issue(author, title):
 
 def book_return(author, title):
     for record in database:
-        if record['author'] == author and record['title'] == title:
+        if record['author'].upper() == author.upper() and record['title'].upper() == title.upper():
             record['quantity'] += 1
             if record['quantity'] == 1:
                 record['status'] = 'Available'
