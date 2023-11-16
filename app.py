@@ -2,18 +2,31 @@ import re
 
 
 
-database = [
-    {'author': 'John Doe', 'title': 'The Mystery of Life', 'quantity': 3, 'status': 'Available'},
-    {'author': 'Jane Smith', 'title': 'Into the Unknown', 'quantity': 0, 'status': 'Not Available'},
-    {'author': 'Michael Johnson', 'title': 'Echoes in the Wind', 'quantity': 5, 'status': 'Available'},
-    {'author': 'Emily Brown', 'title': 'Whispers in the Dark', 'quantity': 1, 'status': 'Available'},
-    {'author': 'David Clark', 'title': 'Lost and Found', 'quantity': 2, 'status': 'Available'},
-    {'author': 'John Doe', 'title': 'The Secret Key', 'quantity': 2, 'status': 'Available'},
-    {'author': 'John Doe', 'title': 'The Hidden Path', 'quantity': 4, 'status': 'Available'},
-    {'author': 'Michael Johnson', 'title': 'Echoes in the Wind', 'quantity': 3, 'status': 'Available'},
-    {'author': 'Emily Brown', 'title': 'Whispers in the Dark', 'quantity': 2, 'status': 'Available'},
-    {'author': 'David Clark', 'title': 'Lost and Found', 'quantity': 0, 'status': 'Not Available'}
-]
+# database = []
+
+def read_database_from_file():
+    database = []
+    try:
+        with open("database.txt", "r") as file:
+            lines = file.readlines()
+            for line in lines:
+                record = line.strip().split(",")
+                book_info = {
+                    'author': record[0],
+                    'title': record[1],
+                    'quantity': int(record[2]),
+                    'status': record[3]
+                }
+                database.append(book_info)
+        return database
+    except FileNotFoundError:
+        return []
+
+def write_database_to_file(database):
+    with open("book_database.txt", "w") as file:
+        for record in database:
+            file.write(','.join(record) + '\n')
+    return
 
 def search(option_1, option_2):
     found_records = []
@@ -40,7 +53,7 @@ def issue(author, title):
             if record['quantity'] == 0:
                 record['status'] = 'Not Available'
             print("Book issued successfully!")
-            return
+    return
 
     print("Book not found in the database!")
 
@@ -54,7 +67,8 @@ def book_return(author, title):
             return
     print("Enter valid details!")
     return
-    
+
+database = read_database_from_file() 
 choice=1
 while choice==1 or choice==2:
     choice = int(input("Enter:\n1 for Search and Issue\n2 for Return\n Any other number for exiting\n"))
@@ -79,7 +93,4 @@ while choice==1 or choice==2:
         book_return(author, title)
     else:
         break
-
-# For printing the contents of the database
-# for record in database:
-#     print(record['author'], " ", record['title'], " ", record['quantity'], " ", record['status'])
+write_database_to_file(database)

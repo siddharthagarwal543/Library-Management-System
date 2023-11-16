@@ -1,0 +1,10 @@
+John Doe,The Mystery of Life,3,Available
+Jane Smith,Into the Unknown,0,Not Available
+Michael Johnson,Echoes in the Wind,5,Available
+Emily Brown,Whispers in the Dark,1,Available
+David Clark,Lost and Found,2,Available
+John Doe,The Secret Key,2,Available
+John Doe,The Hidden Path,4,Available
+Michael Johnson,Echoes in the Wind,3,Available
+Emily Brown,Whispers in the Dark,2,Available
+David Clark,Lost and Found,0,Not Available
