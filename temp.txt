@@ -1,0 +1,121 @@
+import streamlit as st
+import re
+import time
+def read_database_from_file():
+    database = []
+    try:
+        with open("database.txt", "r") as file:
+            lines = file.readlines()
+            for line in lines:
+                record = line.strip().split(",")
+                book_info = {
+                    'author': record[0],
+                    'title': record[1],
+                    'quantity': int(record[2]),
+                    'status': record[3]
+                }
+                database.append(book_info)
+        return database
+    except FileNotFoundError:
+        return []
+
+def write_database_to_file(database):
+    with open("book_database.txt", "w") as file:
+        for record in database:
+            file.write(','.join(str(record.values())) + '\n')
+
+def search(option_1, option_2):
+    database = read_database_from_file()
+    found_records = []
+    if option_1 == 1:
+        pattern = re.compile('^' + option_2, re.IGNORECASE) 
+        found_records = [record for record in database if pattern.match(record['author'])]
+    else:
+        pattern = re.compile('^' + option_2, re.IGNORECASE)
+        found_records = [record for record in database if pattern.match(record['title'])]
+
+    return found_records
+
+def issue(author, title, database):
+    pattern1 = re.compile('^' + author, re.IGNORECASE)
+    pattern2 = re.compile('^' + title, re.IGNORECASE)
+    for record in database:
+        if pattern1.match(record['author']) and pattern2.match(record['title']):
+            if record['quantity'] == 0:
+                st.warning("No books available!")
+                return
+            with st.spinner('Issuing book...'):
+                time.sleep(3)  # Simulating a delay of 3 seconds, replace this with your actual processing time
+                record['quantity'] -= 1
+                if record['quantity'] == 0:
+                    record['status'] = 'Not Available'
+                write_database_to_file(database)  # Save changes to the database file
+                st.success("Book issued successfully!")
+                return
+    st.error("Book not found in the database!")
+
+def book_return(author, title):
+    database = read_database_from_file()
+    for record in database:
+        if record['author'].upper() == author.upper() and record['title'].upper() == title.upper():
+            record['quantity'] += 1
+            if record['quantity'] == 1:
+                record['status'] = 'Available'
+            write_database_to_file(database)  # Save changes to the database file
+            st.success('Book successfully returned!')
+            return
+    st.warning("Enter valid details!")
+# Load the database
+database = read_database_from_file() 
+
+# Streamlit app
+st.title('Library Managment System')
+
+choice = st.sidebar.radio("Choose an option:", ('Search and Issue', 'Return'))
+
+if choice == 'Search and Issue':
+    st.subheader('Search and Issue')
+    option_2 = st.radio("Search by:", ('Author', 'Title'))
+
+    if option_2 == 'Author':
+        author = st.text_input("Enter author name:")
+        if st.button("Search"):
+            found_records = search(1, author)
+            for record in found_records:
+                 st.write(f"Author: {record['author']}")
+                 st.write(f"Title: {record['title']}")
+                 st.write(f"Quantity: {record['quantity']}")
+                 st.write(f"Status: {record['status']}")
+                 st.markdown("---")
+
+            title_issue = st.text_input("Enter book title you want to issue:")
+            if st.button("Issue Book"):
+                issue(author, title_issue)
+                # st.write(issue_status)
+
+    elif option_2 == 'Title':
+        title = st.text_input("Enter book title:")
+        if st.button("Search"):
+            found_records = search(2, title)
+            for record in found_records:
+                 st.write(f"Author: {record['author']}")
+                 st.write(f"Title: {record['title']}")
+                 st.write(f"Quantity: {record['quantity']}")
+                 st.write(f"Status: {record['status']}")
+                 st.markdown("---")
+
+            author_issue = st.text_input("Enter author name you want to issue:")
+            if st.button("Issue Book"):
+                issue(author_issue, title)
+                # st.write(issue_status)
+
+else:
+    st.subheader('Return')
+    author_return = st.text_input("Enter author name:")
+    title_return = st.text_input("Enter book title:")
+    if st.button("Return Book"):
+        book_return(author_return, title_return)
+        # st.write(return_status)
+
+
+# write_database_to_file(database)
