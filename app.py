@@ -1,6 +1,7 @@
+import streamlit as st
 import re
 
-class libraryManager:
+class BookManager:
     def __init__(self):
         self.database = self.read_database_from_file()
 
@@ -17,7 +18,6 @@ class libraryManager:
                         'quantity': int(record[2]),
                         'status': record[3]
                     }
-                    print(book_info)
                     database.append(book_info)
             return database
         except FileNotFoundError:
@@ -44,17 +44,15 @@ class libraryManager:
             pattern = re.compile('^' + option_2, re.IGNORECASE)
             found_records = [record for record in self.database if pattern.match(record['title'])]
 
-        for record in found_records:
-            print(record['title'], " ", record['author'], " ", record['quantity'], " ", record['status'])
+        return found_records
 
     def add_new_book(self, author, title, quantity):
         for record in self.database:
             if record['author'] == author and record['title'] == title:
-                record['quantity']+=quantity
-                print("Book already there so qunatity updated!")
+                st.warning("Book already exists!")
                 return
-        self.database.append({'author': author, 'title': title, 'quantity': quantity, 'status': 'available'})
-        print("New Book added successfully!")
+        self.database.append({'author': author.capitalize(), 'title': title.capitalize(), 'quantity': quantity, 'status': 'available'})
+        st.success("Book added successfully!")
 
     def issue(self, author, title):
         pattern1 = re.compile('^'+author, re.IGNORECASE)
@@ -62,14 +60,14 @@ class libraryManager:
         for record in self.database:
             if pattern1.match(record['author']) and pattern2.match(record['title']):
                 if record['quantity'] == 0:
-                    print("No books available!")
+                    st.warning("No books available!")
                     return
                 record['quantity'] -= 1
                 if record['quantity'] == 0:
                     record['status'] = 'Not Available'
-                print("Book issued successfully!")
+                st.success("Book issued successfully!")
                 return
-        print("Book not found in the database!")
+        st.error("Book not found in the database!")
 
     def book_return(self, author, title):
         for record in self.database:
@@ -77,37 +75,63 @@ class libraryManager:
                 record['quantity'] += 1
                 if record['quantity'] == 1:
                     record['status'] = 'Available'
-                print('Book successfully returned!')
+                st.success('Book successfully returned!')
                 return
-        print("Enter valid details!")
+        st.warning("Enter valid details!")
 
-library_manager = libraryManager()
+book_manager = BookManager()
 
-choice = 1
-while choice in (0, 1, 2):
-    choice = int(input("Enter:\n0 for Adding New Book \n1 for Search and Issue\n2 for Return\n Any other number for exiting\n"))
-    if choice == 0:
-        author = input('Enter author name: ')
-        title = input('Enter book title: ')
-        quantity = int(input('Enter quantity: '))
-        library_manager.add_new_book(author, title, quantity)
-    elif choice == 1:
-        option_2 = int(input("Enter:\n1 for Author\n2 for Title\n"))
-        if option_2 == 1:
-            author = input("Enter author name: ")
-            library_manager.search(option_2, author)
-            title = input("Enter book title you want to issue: ")
-            library_manager.issue(author, title)
-        elif option_2 == 2:
-            title = input("Enter Book Title: ")
-            library_manager.search(option_2, title)
-            author = input("Enter author name you want to issue: ")
-            library_manager.issue(author, title)
-    elif choice == 2:
-        author = input("Enter author name: ")
-        title = input("Enter Book title: ")
-        library_manager.book_return(author, title)
-    else:
-        break
+st.title('Library Management System')
 
-library_manager.write_database_to_file()
+choice = st.sidebar.radio("Choose an option:", ('Add New Book', 'Search and Issue', 'Return'))
+
+if choice == 'Add New Book':
+    st.subheader('Add New Book')
+    author = st.text_input("Enter author name:")
+    title = st.text_input("Enter book title:")
+    quantity = st.number_input("Enter quantity:", value=1)
+    if st.button("Add Book"):
+        book_manager.add_new_book(author, title, quantity)
+
+elif choice == 'Search and Issue':
+    st.subheader('Search and Issue')
+    option_2 = st.radio("Search by:", ('Author', 'Title'))
+
+    if option_2 == 'Author':
+        author = st.text_input("Enter author name:")
+        if st.button("Search"):
+            found_records = book_manager.search(1, author)
+            for record in found_records:
+                st.write(f"Author: {record['author']}")
+                st.write(f"Title: {record['title']}")
+                st.write(f"Quantity: {record['quantity']}")
+                st.write(f"Status: {record['status']}")
+                st.markdown("---")
+
+            title_issue = st.text_input("Enter book title you want to issue:")
+            if st.button("Issue Book"):
+                book_manager.issue(author, title_issue)
+
+    elif option_2 == 'Title':
+        title = st.text_input("Enter book title:")
+        if st.button("Search"):
+            found_records = book_manager.search(2, title)
+            for record in found_records:
+                st.write(f"Author: {record['author']}")
+                st.write(f"Title: {record['title']}")
+                st.write(f"Quantity: {record['quantity']}")
+                st.write(f"Status: {record['status']}")
+                st.markdown("---")
+
+            author_issue = st.text_input("Enter author name you want to issue:")
+            if st.button("Issue Book"):
+                book_manager.issue(author_issue, title)
+
+else:
+    st.subheader('Return')
+    author_return = st.text_input("Enter author name:")
+    title_return = st.text_input("Enter book title:")
+    if st.button("Return Book"):
+        book_manager.book_return(author_return, title_return)
+
+book_manager.write_database_to_file()
