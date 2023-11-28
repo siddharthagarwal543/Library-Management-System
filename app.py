@@ -55,6 +55,8 @@ class BookManager:
         st.success("Book added successfully!")
 
     def issue(self, author, title):
+        # author="sid"
+        # title="the broken"
         pattern1 = re.compile('^'+author, re.IGNORECASE)
         pattern2 = re.compile('^'+title, re.IGNORECASE)
         for record in self.database:
@@ -83,7 +85,7 @@ book_manager = BookManager()
 
 st.title('Library Management System')
 
-choice = st.sidebar.radio("Choose an option:", ('Add New Book', 'Search and Issue', 'Return'))
+choice = st.sidebar.radio("Choose an option:", ('Add New Book', 'Search','Issue','Return'))
 
 if choice == 'Add New Book':
     st.subheader('Add New Book')
@@ -93,7 +95,14 @@ if choice == 'Add New Book':
     if st.button("Add Book"):
         book_manager.add_new_book(author, title, quantity)
 
-elif choice == 'Search and Issue':
+elif choice=='Issue':
+    st.subheader('Add New Book')
+    author = st.text_input("Enter author name:")
+    title = st.text_input("Enter book title:")
+    if st.button("Issue Book"):
+        book_manager.issue(author, title)
+
+elif choice == 'Search':
     st.subheader('Search and Issue')
     option_2 = st.radio("Search by:", ('Author', 'Title'))
 
@@ -108,10 +117,12 @@ elif choice == 'Search and Issue':
                 st.write(f"Status: {record['status']}")
                 st.markdown("---")
 
-            title_issue = st.text_input("Enter book title you want to issue:")
-            if st.button("Issue Book"):
-                book_manager.issue(author, title_issue)
-
+            # title_issue = st.text_input("Enter book title you want to issue:")
+            # issue_book_placeholder = st.empty()
+            # if st.button("Issue Book"):
+            #     issue_book_placeholder.write("Book issued successfully!")
+            #     book_manager.issue(author, title_issue)  # Call the issue function
+    
     elif option_2 == 'Title':
         title = st.text_input("Enter book title:")
         if st.button("Search"):
@@ -123,9 +134,8 @@ elif choice == 'Search and Issue':
                 st.write(f"Status: {record['status']}")
                 st.markdown("---")
 
-            author_issue = st.text_input("Enter author name you want to issue:")
-            if st.button("Issue Book"):
-                book_manager.issue(author_issue, title)
+            # author_issue = st.text_input("Enter author name you want to issue:")
+            # issue_book = st.button("Issue Book", on_click=lambda: (book_manager.issue(author_issue, title) ,st.write(author_issue)) )
 
 else:
     st.subheader('Return')
